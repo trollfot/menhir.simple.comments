@@ -8,6 +8,5 @@
   <include package="dolmen.app.security" />
   
   <grok:grok package="."/>
-  <i18n:registerTranslations directory="locales" />
 
 </configure>
