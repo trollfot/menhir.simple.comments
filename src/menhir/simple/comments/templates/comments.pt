@@ -1,0 +1,15 @@
+<div tal:condition="viewlet/show">
+  <h2>Comments</h2>
+
+  <tal:form content="structure viewlet/form/render" />
+
+  <dl>
+    <tal:comments repeat="comment viewlet/comments">
+      <dt>
+	<span tal:content="comment/author" />,
+	<span tal:content="comment/date" />
+      </dt>
+      <dd tal:content="comment/text" />
+    </tal:comments>
+  </dl>
+</div>
