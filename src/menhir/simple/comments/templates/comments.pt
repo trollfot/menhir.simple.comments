@@ -1,15 +1,23 @@
-<div tal:condition="viewlet/show">
+<div tal:condition="viewlet/show"
+     class="comments">
   <h2>Comments</h2>
 
   <tal:form content="structure viewlet/form/render" />
 
-  <dl>
-    <tal:comments repeat="comment viewlet/comments">
-      <dt>
-	<span tal:content="comment/author" />,
-	<span tal:content="comment/date" />
-      </dt>
-      <dd tal:content="comment/text" />
-    </tal:comments>
-  </dl>
+  <ul class="comments-listing simple">
+    <li class="comment"
+	tal:repeat="comment viewlet/comments">
+      <div class="thumb">
+	<span class="clipout">
+	  <span class="clipin">
+	    <img src=""
+		 tal:attributes="src string:${viewlet/baseurl}/portrait?uid=${comment/author}" />
+	  </span>
+	</span>
+      </div>
+      <span tal:content="comment/author" />,
+      <span class="date" tal:content="comment/date" />
+      <div tal:content="comment/text" />
+    </li>
+  </ul>
 </div>
