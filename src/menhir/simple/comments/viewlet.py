@@ -36,6 +36,7 @@ class Portrait(grok.View):
 
 class Comments(grok.Viewlet):
     grok.view(IDisplayView)
+    grok.order(20)
     grok.context(IAttributeAnnotatable)
     grok.viewletmanager(master.DolmenBelowBody)
 
