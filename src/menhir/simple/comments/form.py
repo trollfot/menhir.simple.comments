@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import grokcore.formlib as grok
-import megrok.z3cform.base as z3cform
+import dolmen.forms.base as form
 
 from zope.event import notify
 from zope.lifecycleevent import ObjectCreatedEvent
@@ -10,11 +10,11 @@ from zope.annotation.interfaces import IAttributeAnnotatable
 from menhir.simple.comments import IComment, Comment, ICommentable, _
 
 
-class AddComment(z3cform.PageAddForm):
+class AddComment(form.PageAddForm):
     grok.name('comment')
     grok.context(IAttributeAnnotatable)
 
-    fields = z3cform.field.Fields(IComment).omit('__parent__', '__name__')
+    fields = form.Fields(IComment).omit('__parent__', '__name__')
     form_name = _(u"Add a new comment")
 
     def create(self, data):
