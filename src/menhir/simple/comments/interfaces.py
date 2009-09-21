@@ -3,8 +3,8 @@
 from menhir.simple.comments import _
 from zope.schema import Object, Bool, Text
 from zope.interface import Interface, Attribute
-from zope.container.constraints import contains
-from zope.container.interfaces import IContainer, IContained
+from zope.app.container.constraints import contains
+from zope.app.container.interfaces import IContainer, IContained
 
 
 class IComment(IContained):
