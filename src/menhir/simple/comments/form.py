@@ -14,13 +14,13 @@ class AddComment(form.PageAddForm):
     grok.name('comment')
     grok.context(IAttributeAnnotatable)
 
-    fields = form.Fields(IComment).omit('__parent__', '__name__')
+    fields = form.Fields(IComment).select('text')
     form_name = _(u"Add a new comment")
 
     def create(self, data):
         obj = Comment()
         notify(ObjectCreatedEvent(obj))
-        form.applyChanges(self, obj, data)
+        form.apply_data_event(self.fields, obj, data)
         return obj
 
     def add(self, comment):

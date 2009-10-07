@@ -24,6 +24,8 @@ setup(name='menhir.simple.comments',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'dolmen.forms.base',
+          'grokcore.annotation',
       ],
       entry_points="""
       # -*- Entry points: -*-

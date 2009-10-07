@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import grok
+import grokcore.annotation as grok
 import menhir.simple.comments as menhir
 from zope.schema.fieldproperty import FieldProperty
 from zope.annotation.interfaces import IAttributeAnnotatable
@@ -14,7 +14,6 @@ class Commenting(grok.Annotation):
     
     enabled = FieldProperty(menhir.ICommentable['enabled'])
 
-    # FIXME : we need a context from grok.Annotation
     def __init__(self):
         self._comments = menhir.CommentingFolder()
 
@@ -25,4 +24,3 @@ class Commenting(grok.Annotation):
     def add(self, comment):
         cid = self.comments.next_id()
         self.comments[cid] = comment
-        
