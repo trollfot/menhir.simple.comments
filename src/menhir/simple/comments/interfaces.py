@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from menhir.simple.comments import _
-from zope.schema import Object, Bool, Text
+from zope.schema import Text
 from zope.interface import Interface, Attribute
 from zope.app.container.constraints import contains
 from zope.app.container.interfaces import IContainer, IContained
+from menhir.simple.comments import _
+
+
+class ICommentable(Interface):
+    """Marker interface for the items that can be commented.
+    """
 
 
 class IComment(IContained):
@@ -25,22 +30,6 @@ class IComments(IContainer):
     """
     contains(IComment)
 
-
-class ICommentable(Interface):
-    """Defines a commentable object.
-    """
-    enabled = Bool(
-        title = _(u'Enable commenting'),
-        default = True,
-        required = False,
-        )
-
-    comments = Object(
-        title = _(u'Commenting container'),
-        required = True,
-        schema = IComments
-        )
-
-    def add(comment):
-        """Add a comment to the commenting container.
+    def insert(comment):
+        """Adds a comment.
         """

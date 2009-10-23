@@ -1,67 +1,71 @@
 # -*- coding: utf-8 -*-
 
 import grok
+from zope.interface import Interface, directlyProvides
+from zope.component import getMultiAdapter, getAdapter
 from dolmen.app.layout import master, IDisplayView
 from dolmen.app.authentication import IUserDirectory
-from menhir.simple.comments import ICommentable
-from zope.interface import Interface
-from zope.component import getMultiAdapter, getUtility
-from zope.annotation.interfaces import IAttributeAnnotatable
-from dolmen.imaging import IImageMiniaturizer
-from zope.app.publisher.browser.fileresource import FileResource
+from menhir.simple.comments import IComments, ICommentable
+from zope.traversing.browser import absoluteURL
+
+from zeam.utils.batch import batch
+from zeam.utils.batch.interfaces import IBatching
+
 grok.templatedir('templates')
 
 
-class Portrait(grok.View):
-    grok.context(Interface)
-               
-    def render(self):
-        uid = self.request.form.get('uid')
-        if uid:
-            users = getUtility(IUserDirectory)
-            user = users.getUserByLogin(uid)
-            if user is not None and user.portrait is not None:
-                thumbs = IImageMiniaturizer(user)
-                thumb = thumbs.retrieve_thumbnail(
-                    "small", fieldname='portrait'
-                    )
-                if thumb:
-                    return getMultiAdapter((thumb, self.request),
-                                           name = "file_publish")()
-        resource =  FileResource(self.static['unknown.gif'].context,
-                                 self.request)
-        resource.HEAD()
-        return resource.GET()
+def prepare_comments(container, keys, request):
+    """This useful function returns a list of dicts, representing comments
+    from a list of keys, present in the given container.
+    """
+    def author_name(author):
+        """This inner function provides a formatted userid
+        for zope-level users.
+        """
+        if author == "zope.anybody":
+            return u"Anonymous"
+        return author
+
+    # We get a date formatter.
+    formatter = request.locale.dates.getFormatter(
+            u'dateTime', u'short', None, u'gregorian')
+    
+    for key in keys:
+        comment = container[key]
+        yield {'id': comment.__name__,
+               'author': author_name(comment.author),
+               'date': formatter.format(comment.date),
+               'text': comment.text}
 
 
 class Comments(grok.Viewlet):
-    grok.view(IDisplayView)
     grok.order(20)
-    grok.context(IAttributeAnnotatable)
+    grok.view(IDisplayView)
+    grok.context(ICommentable)
     grok.viewletmanager(master.DolmenBelowBody)
 
+    def form(self):
+        form = getMultiAdapter(
+            (self.context, self.request), name = u'comment'
+            )
+        form.update()
+        form.updateForm()
+        return form.render()
+
     def update(self):
-        commenter = ICommentable(self.context)
-        self.show = False
+        self.comments = []
+        commenter = getAdapter(
+            self.context, IComments, 'commenting.comments')
+        commenter.__parent__ = self.context
+        commenter.__name__ = u""
         
-        if commenter.enabled is True:
-            self.baseurl = self.view.application_url()
-            self.show = True
-            self.form = getMultiAdapter((self.context, self.request),
-                                        name = u'comment')
-            self.form.update()
-            self.form.updateForm()
-            formatter = self.request.locale.dates.getFormatter(
-                u'dateTime', u'medium', None, u'gregorian'
-                )
+        self.avatar = self.view.application_url() + '/++avatar++'
+   
+        keys = list(reversed(commenter.keys()))
+        batched_keys = batch(
+            keys, count=6, name='comments', request=self.request)
+        self.batch = getMultiAdapter(
+            (self.view, batched_keys, self.request), IBatching)()
 
-            def author_name(author):
-                if author == "zope.anybody":
-                    return u"Anonymous"
-                return author
-
-            self.comments = [{'author': author_name(comment.author),
-                              'date': formatter.format(comment.date),
-                              'text': comment.text } for comment in
-                             commenter.comments.values()]
-            
+        self.comments = prepare_comments(
+            commenter, batched_keys, self.request)

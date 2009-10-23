@@ -24,8 +24,10 @@ setup(name='menhir.simple.comments',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'dolmen.app.layout',
           'dolmen.forms.base',
-          'grokcore.annotation',
+          'dolmen.storage',
+          'zeam.utils.batch==0.4.1',
       ],
       entry_points="""
       # -*- Entry points: -*-

@@ -1,49 +1,22 @@
 # -*- coding: utf-8 -*-
 
+import grokcore.component as grok
+
 from persistent import Persistent
 from BTrees.Length import Length
-from BTrees.IOBTree import IOBTree
 from zope.event import notify
-from zope.interface import implements
 from zope.app.container import contained
-from zope.cachedescriptors.property import Lazy
-from menhir.simple.comments import IComments
+from zope.exceptions import DuplicationError
+from menhir.simple.comments import IComments, ICommentable
+from dolmen.storage import AnnotationStorage, IOBTreeStorage
 
 
-class CommentingFolder(Persistent, contained.Contained):
-    implements(IComments)
-    
-    def __init__(self):
-        self.data = IOBTree()
-        self.__len = Length()
-        self.__internal_id = 0
-
-    def __contains__(self, key):
-        return key in self.data
-
-    @Lazy
-    def _BTreeContainer__len(self):
-        l = Length()
-        ol = len(self._SampleContainer__data)
-        if ol > 0:
-            l.change(ol)
-        self._p_changed = True
-        return l
-
-    def __len__(self):
-        return self.__len()
-
-    def __iter__(self):
-        return iter(self.data)
-
-    def __getitem__(self, key):
-        return self.data[key]
-
-    def get(self, key, default=None):
-        return self.data.get(key, default)
-
-    def next_id(self):
-        return self.__internal_id + 1
+class CommentStorage(IOBTreeStorage):
+    """A container based on an IOBTree
+    """
+    def __delitem__(self, key):
+        contained.uncontained(self[key], self, key)
+        del self[key]
 
     def __setitem__(self, name, object):
         """Add the given object to the folder under the given name.
@@ -52,35 +25,41 @@ class CommentingFolder(Persistent, contained.Contained):
             raise TypeError("Name must be an integer rather than a %s" %
                             name.__class__.__name__)
 
-        if name in self.data:
-            raise KeyError("id '%s' is already in use" % name)
-
-        if name is not self.next_id():
-            raise KeyError("id '%s' is not a direct incrementation" % name)
+        if self.__contains__(name):
+            raise DuplicationError("key %r is already in use." % name)
 
         object, event = contained.containedEvent(object, self, name)
-        l = self.__len
-        IOBTree.__setitem__(self.data, name, object)
-        self.__internal_id += 1
-        l.change(1)
+        IOBTreeStorage.__setitem__(self, name, object)
 
         if event:
             notify(event)
             contained.notifyContainerModified(self)
 
-    def __delitem__(self, key):
-        l = self.__len
-        contained.uncontained(self.data[key], self, key)
-        del self.data[key]
-        l.change(-1)
 
-    has_key = __contains__
+class Commenting(AnnotationStorage):
+    grok.context(ICommentable)
+    grok.provides(IComments)
+    grok.name('commenting.comments')
+    
+    _factory = CommentStorage
 
-    def items(self, key=None):
-        return self.data.items(key)
+    def insert(self, comment):
+        tries = 0
+        try:
+            name = self.storage.maxKey() + 1
+        except ValueError:
+            name = 1
+        inserted = False
+        while inserted is False:
+            if tries > 10:
+                break
+            try:
+                self[name] = comment
+                inserted = True
+            except DuplicationError:
+                name += 1
+                tries += 1
 
-    def keys(self, key=None):
-        return self.data.keys(key)
-
-    def values(self, key=None):
-        return self.data.values(key)
+        if inserted is True:
+            return self[name]
+        return None

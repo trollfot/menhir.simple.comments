@@ -1,23 +1,23 @@
-<div tal:condition="viewlet/show"
-     class="comments">
+<div class="comments">
   <h2>Comments</h2>
 
-  <tal:form content="structure viewlet/form/render" />
+  <tal:form content="structure viewlet/form" />
 
-  <ul class="comments-listing simple">
-    <li class="comment"
-	tal:repeat="comment viewlet/comments">
-      <div class="thumb">
-	<span class="clipout">
-	  <span class="clipin">
-	    <img src=""
-		 tal:attributes="src string:${viewlet/baseurl}/portrait?uid=${comment/author}" />
-	  </span>
-	</span>
+  <div tal:content="structure viewlet/batch" />
+
+  <dl class="comments-listing simple">
+    <dd tal:repeat="msg viewlet/comments">
+      <div class="portrait">
+	<img src=""
+	     tal:attributes="src string:${viewlet/avatar}${msg/author};
+			     title msg/author" />
       </div>
-      <span tal:content="comment/author" />,
-      <span class="date" tal:content="comment/date" />
-      <div tal:content="comment/text" />
-    </li>
-  </ul>
+      <span tal:content="msg/id" />.
+      <span class="author" tal:content="msg/author" />,
+      <span class="date" tal:content="msg/date" />
+      <div class="body" tal:content="msg/text" />
+    </dd>
+  </dl>
+
+  <div tal:content="structure viewlet/batch" />
 </div>

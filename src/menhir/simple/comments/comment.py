@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from grok import Model
-from zope.interface import implements
+import grok
+from zope.component import getMultiAdapter
+from zope.traversing.browser import absoluteurl
+from zope.traversing.browser.interfaces import IAbsoluteURL
 from zope.dublincore.property import DCProperty
+from zope.publisher.interfaces.http import IHTTPRequest
 from zope.schema.fieldproperty import FieldProperty
 from menhir.simple.comments import IComment
 
 
-class Comment(Model):
+class Comment(grok.Model):
     """A simple IComment implementation.
     """ 
-    implements(IComment)
+    grok.implements(IComment)
 
     _id = None
     date = DCProperty('created')
@@ -24,3 +27,21 @@ class Comment(Model):
         def set(self, id):
             self._id = int(id)
         return property(get, set)
+
+
+class CommentURL(absoluteurl.AbsoluteURL, grok.MultiAdapter):
+    grok.name('absolute_url')
+    grok.adapts(IComment, IHTTPRequest)
+    grok.provides(IAbsoluteURL)
+
+    def __str__(self):
+        context = self.context
+        request = self.request
+
+        import pdb
+        pdb.set_trace()
+
+        container = getattr(context, '__parent__', None)
+        name = context.__name__
+        url = absoluteurl.absoluteURL(container, request)
+        return url + name
