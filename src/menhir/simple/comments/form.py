@@ -2,7 +2,7 @@
 
 import grok
 import dolmen.forms.base as form
-from dolmen.app.layout import ApplicationAwareView
+from dolmen.app.layout import models
 
 from zope.event import notify
 from zope.component import getAdapter
@@ -12,7 +12,7 @@ from menhir.simple.comments import Comment, _
 from menhir.simple.comments import IComment, IComments, ICommentable
 
 
-class AddComment(form.PageAddForm, ApplicationAwareView):
+class AddComment(form.PageAddForm, models.ApplicationAwareView):
     grok.name('comment')
     grok.context(ICommentable)
 

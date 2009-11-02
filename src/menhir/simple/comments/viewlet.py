@@ -42,7 +42,7 @@ class Comments(grok.Viewlet):
     grok.order(20)
     grok.view(IDisplayView)
     grok.context(ICommentable)
-    grok.viewletmanager(master.DolmenBelowBody)
+    grok.viewletmanager(master.BelowBody)
 
     def form(self):
         form = getMultiAdapter(
