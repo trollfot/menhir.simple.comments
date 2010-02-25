@@ -12,7 +12,7 @@ from menhir.simple.comments import Comment, _
 from menhir.simple.comments import IComment, IComments, ICommentable
 
 
-class AddComment(form.PageAddForm, models.ApplicationAwareView):
+class AddComment(form.PageAddForm):
     grok.name('comment')
     grok.context(ICommentable)
 
