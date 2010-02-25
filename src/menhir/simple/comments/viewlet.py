@@ -4,7 +4,6 @@ import grok
 from zope.interface import Interface, directlyProvides
 from zope.component import getMultiAdapter, getAdapter
 from dolmen.app.layout import master, IDisplayView
-from dolmen.app.authentication import IUserDirectory
 from menhir.simple.comments import IComments, ICommentable
 from zope.traversing.browser import absoluteURL
 
